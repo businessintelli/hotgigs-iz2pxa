@@ -1,0 +1,180 @@
+/* animations.css - HotGigs UI Animation System
+ * Version: 1.0.0
+ * Integration with tailwindcss@3.0+
+ * WCAG 2.1 AA compliant with reduced motion support
+ */
+
+/* Animation Duration Variables */
+:root {
+  --animation-very-fast: 100ms;
+  --animation-fast: 150ms;
+  --animation-normal: 200ms;
+  --animation-slow: 300ms;
+  --animation-very-slow: 500ms;
+
+  /* Animation Easing Curves */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Fade Animations */
+.fade-in {
+  animation: fadeIn var(--animation-fast) var(--ease-out);
+  will-change: opacity;
+}
+
+.fade-out {
+  animation: fadeOut var(--animation-fast) var(--ease-in);
+  will-change: opacity;
+}
+
+.fade-in-slow {
+  animation: fadeIn var(--animation-slow) var(--ease-out);
+}
+
+.fade-out-slow {
+  animation: fadeOut var(--animation-slow) var(--ease-in);
+}
+
+/* Slide Animations */
+.slide-in-right {
+  animation: slideInRight var(--animation-normal) var(--ease-in-out);
+  will-change: transform;
+}
+
+.slide-out-right {
+  animation: slideOutRight var(--animation-normal) var(--ease-in-out);
+  will-change: transform;
+}
+
+.slide-in-left {
+  animation: slideInLeft var(--animation-normal) var(--ease-in-out);
+  will-change: transform;
+}
+
+.slide-out-left {
+  animation: slideOutLeft var(--animation-normal) var(--ease-in-out);
+  will-change: transform;
+}
+
+/* Scale Animations */
+.scale-in {
+  animation: scaleIn var(--animation-fast) var(--ease-out);
+  will-change: transform;
+}
+
+.scale-out {
+  animation: scaleOut var(--animation-fast) var(--ease-in);
+  will-change: transform;
+}
+
+.scale-bounce {
+  animation: scaleBounce var(--animation-normal) var(--ease-bounce);
+}
+
+/* Attention Animations */
+.pulse {
+  animation: pulse var(--animation-slow) var(--ease-in-out) infinite;
+}
+
+.shake {
+  animation: shake var(--animation-fast) var(--ease-in-out);
+}
+
+.bounce {
+  animation: bounce var(--animation-normal) var(--ease-bounce);
+}
+
+/* Transition Utilities */
+.transition-transform {
+  transition: transform var(--animation-normal) var(--ease-in-out);
+  will-change: transform;
+}
+
+.transition-opacity {
+  transition: opacity var(--animation-fast) var(--ease-out);
+  will-change: opacity;
+}
+
+.transition-colors {
+  transition: background-color var(--animation-fast) var(--ease-in-out),
+              border-color var(--animation-fast) var(--ease-in-out);
+}
+
+.transition-all {
+  transition: all var(--animation-normal) var(--ease-in-out);
+}
+
+/* Keyframe Definitions */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutLeft {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); }
+  to { transform: scale(1); }
+}
+
+@keyframes scaleOut {
+  from { transform: scale(1); }
+  to { transform: scale(0.95); }
+}
+
+@keyframes scaleBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
