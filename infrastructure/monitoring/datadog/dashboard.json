@@ -1,0 +1,244 @@
+{
+  "title": "HotGigs Platform Overview",
+  "description": "Main monitoring dashboard for HotGigs recruitment platform",
+  "widgets": [
+    {
+      "name": "System Health Overview",
+      "type": "group",
+      "layout": {
+        "height": 40,
+        "width": 100,
+        "x": 0,
+        "y": 0
+      },
+      "widgets": [
+        {
+          "title": "API Health Status",
+          "type": "check_status",
+          "query": "\"http.can_connect\".over(\"service:hotgigs-api\").by(\"endpoint\")",
+          "time": {
+            "live_span": "1h"
+          }
+        },
+        {
+          "title": "Database Health",
+          "type": "check_status",
+          "query": "\"postgres.can_connect\".over(\"service:hotgigs-db\")",
+          "time": {
+            "live_span": "1h"
+          }
+        },
+        {
+          "title": "Edge Function Health",
+          "type": "check_status", 
+          "query": "\"edge.function.health\".over(\"service:hotgigs-edge\")",
+          "time": {
+            "live_span": "1h"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Performance Metrics",
+      "type": "group",
+      "layout": {
+        "height": 40,
+        "width": 100,
+        "x": 0,
+        "y": 40
+      },
+      "widgets": [
+        {
+          "title": "API Response Time",
+          "type": "timeseries",
+          "query": "avg:http.request.duration{service:hotgigs-api} by {endpoint}",
+          "viz_type": "line",
+          "yaxis": {
+            "max": "2000",
+            "include_zero": true,
+            "scale": "linear"
+          }
+        },
+        {
+          "title": "Error Rate",
+          "type": "timeseries",
+          "query": "sum:http.errors{service:hotgigs-api}.as_rate() by {endpoint}",
+          "viz_type": "line",
+          "yaxis": {
+            "include_zero": true,
+            "scale": "linear"
+          }
+        },
+        {
+          "title": "Uptime SLA",
+          "type": "slo",
+          "query": "sum:availability.uptime{service:hotgigs-api}",
+          "target": 99.9,
+          "timeframe": "30d"
+        }
+      ]
+    },
+    {
+      "name": "Database Metrics",
+      "type": "group",
+      "layout": {
+        "height": 40,
+        "width": 100,
+        "x": 0,
+        "y": 80
+      },
+      "widgets": [
+        {
+          "title": "Active Connections",
+          "type": "timeseries",
+          "query": "avg:postgresql.connections{service:hotgigs-db} by {pool}",
+          "viz_type": "line",
+          "yaxis": {
+            "include_zero": true,
+            "scale": "linear"
+          }
+        },
+        {
+          "title": "Query Latency",
+          "type": "heatmap",
+          "query": "avg:postgresql.query.duration{service:hotgigs-db} by {query_type}",
+          "time": {
+            "live_span": "1h"
+          }
+        },
+        {
+          "title": "Connection Pool Utilization",
+          "type": "timeseries",
+          "query": "avg:postgresql.pool.utilization{service:hotgigs-db} by {pool}",
+          "viz_type": "area",
+          "yaxis": {
+            "max": "100",
+            "include_zero": true,
+            "scale": "linear"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Edge Functions",
+      "type": "group",
+      "layout": {
+        "height": 40,
+        "width": 100,
+        "x": 0,
+        "y": 120
+      },
+      "widgets": [
+        {
+          "title": "Function Invocations",
+          "type": "timeseries",
+          "query": "sum:edge.function.invocations{service:hotgigs-edge}.as_rate() by {function_name}",
+          "viz_type": "line",
+          "yaxis": {
+            "include_zero": true,
+            "scale": "linear"
+          }
+        },
+        {
+          "title": "Function Errors",
+          "type": "timeseries",
+          "query": "sum:edge.function.errors{service:hotgigs-edge}.as_rate() by {function_name}",
+          "viz_type": "line",
+          "yaxis": {
+            "include_zero": true,
+            "scale": "linear"
+          }
+        },
+        {
+          "title": "Cold Starts",
+          "type": "timeseries",
+          "query": "sum:edge.function.cold_starts{service:hotgigs-edge}.as_count() by {function_name}",
+          "viz_type": "bars",
+          "yaxis": {
+            "include_zero": true,
+            "scale": "linear"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Business Metrics",
+      "type": "group",
+      "layout": {
+        "height": 40,
+        "width": 100,
+        "x": 0,
+        "y": 160
+      },
+      "widgets": [
+        {
+          "title": "Active Jobs",
+          "type": "query_value",
+          "query": "sum:hotgigs.jobs.active{*} by {department}",
+          "precision": 0
+        },
+        {
+          "title": "Interview Rate",
+          "type": "timeseries",
+          "query": "sum:hotgigs.interviews.scheduled{*}.as_rate() by {interview_type}",
+          "viz_type": "line",
+          "yaxis": {
+            "include_zero": true,
+            "scale": "linear"
+          }
+        },
+        {
+          "title": "Candidate Pipeline",
+          "type": "toplist",
+          "query": "sum:hotgigs.candidates.active{*} by {pipeline_stage}",
+          "style": {
+            "palette": "cool"
+          }
+        }
+      ]
+    }
+  ],
+  "template_variables": [
+    {
+      "name": "env",
+      "prefix": "env",
+      "default": "production"
+    },
+    {
+      "name": "service",
+      "prefix": "service",
+      "default": "hotgigs"
+    },
+    {
+      "name": "region",
+      "prefix": "region",
+      "default": "*"
+    }
+  ],
+  "alert_rules": [
+    {
+      "name": "High API Latency",
+      "query": "avg(last_5m):avg:http.request.duration{service:hotgigs-api} > 2",
+      "type": "metric alert",
+      "message": "API response time exceeding 2 seconds SLA threshold",
+      "tags": ["service:hotgigs-api", "severity:critical"],
+      "notify": ["@pagerduty-hotgigs-sre"]
+    },
+    {
+      "name": "Error Rate Spike",
+      "query": "sum(last_5m):sum:http.errors{service:hotgigs-api}.as_rate() > 10",
+      "type": "metric alert",
+      "message": "High error rate detected in API responses",
+      "tags": ["service:hotgigs-api", "severity:critical"],
+      "notify": ["@pagerduty-hotgigs-sre"]
+    },
+    {
+      "name": "Database Connection Saturation",
+      "query": "avg(last_5m):avg:postgresql.pool.utilization{service:hotgigs-db} > 90",
+      "type": "metric alert",
+      "message": "Database connection pool near capacity",
+      "tags": ["service:hotgigs-db", "severity:warning"],
+      "notify": ["@slack-hotgigs-db-alerts"]
+    }
+  ]
+}
