@@ -1,0 +1,37 @@
+* @hotgigs/maintainers @hotgigs/security-team
+
+# Backend team owns all backend code with security review
+src/backend/** @hotgigs/backend-team @hotgigs/security-team
+
+# Frontend team owns all web application code with security review
+src/web/** @hotgigs/frontend-team @hotgigs/security-team
+
+# AI team owns all AI/ML related services with security review
+src/backend/services/ai/** @hotgigs/ai-team @hotgigs/security-team
+
+# AI and Data Science teams jointly own model definitions
+src/backend/services/ai/models/** @hotgigs/ai-team @hotgigs/security-team @hotgigs/data-science-team
+
+# DevOps team owns all infrastructure code with security review
+infrastructure/** @hotgigs/devops-team @hotgigs/security-team
+
+# DevOps team owns all CI/CD workflows with security review
+.github/workflows/** @hotgigs/devops-team @hotgigs/security-team
+
+# Database team owns all database schemas and migrations with security review
+src/backend/db/** @hotgigs/database-team @hotgigs/security-team
+
+# Security team exclusively owns all security-related code
+src/backend/services/security/** @hotgigs/security-team
+
+# UI team owns all React components with accessibility review
+src/web/src/components/** @hotgigs/ui-team @hotgigs/accessibility-team
+
+# Documentation team and technical writers own all markdown files
+*.md @hotgigs/docs-team @hotgigs/technical-writers
+
+# DevOps team owns all configuration files with security review
+config/** @hotgigs/devops-team @hotgigs/security-team
+
+# QA team owns all test files with security review
+tests/** @hotgigs/qa-team @hotgigs/security-team
