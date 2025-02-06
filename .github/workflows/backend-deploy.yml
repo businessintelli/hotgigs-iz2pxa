@@ -1,0 +1,186 @@
+name: Backend Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        type: choice
+        options:
+          - staging
+          - production
+        required: true
+
+env:
+  NODE_VERSION: '18.x'
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+  SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+  SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+jobs:
+  deploy_staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 30
+    concurrency:
+      group: staging_deployment
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 'latest'
+
+      - name: Install dependencies
+        run: |
+          cd src/backend
+          npm ci --prefer-offline
+
+      - name: Type check
+        run: |
+          cd src/backend
+          npm run typecheck
+
+      - name: Lint
+        run: |
+          cd src/backend
+          npm run lint
+
+      - name: Run tests
+        run: |
+          cd src/backend
+          npm run test
+
+      - name: Build project
+        run: |
+          cd src/backend
+          npm run build
+        env:
+          NODE_ENV: staging
+
+      - name: Run database migrations
+        run: |
+          cd src/backend
+          npm run migrate
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Deploy edge functions
+        run: |
+          cd src/backend
+          supabase functions deploy --project-ref ${{ secrets.STAGING_PROJECT_ID }}
+        env:
+          NODE_ENV: staging
+
+      - name: Health check
+        run: |
+          cd src/backend
+          npm run test:e2e
+        env:
+          API_URL: ${{ secrets.STAGING_API_URL }}
+
+  deploy_production:
+    name: Deploy to Production
+    needs: [deploy_staging]
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    concurrency:
+      group: production_deployment
+      cancel-in-progress: false
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 'latest'
+
+      - name: Install dependencies
+        run: |
+          cd src/backend
+          npm ci --prefer-offline
+
+      - name: Build project
+        run: |
+          cd src/backend
+          npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Run database migrations
+        run: |
+          cd src/backend
+          npm run migrate
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: Deploy edge functions
+        run: |
+          cd src/backend
+          supabase functions deploy --project-ref ${{ secrets.PRODUCTION_PROJECT_ID }}
+        env:
+          NODE_ENV: production
+
+      - name: Health check
+        run: |
+          cd src/backend
+          npm run test:e2e
+        env:
+          API_URL: ${{ secrets.PRODUCTION_API_URL }}
+
+      - name: Update monitoring
+        run: |
+          cd src/backend
+          npm run update-monitors
+        env:
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "text": "Production deployment ${{ job.status }}\nCommit: ${{ github.sha }}\nWorkflow: ${{ github.workflow }}"
+          }'
