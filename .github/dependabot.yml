@@ -1,0 +1,132 @@
+version: 2
+updates:
+  # Backend dependencies configuration
+  - package-ecosystem: "npm"
+    directory: "/src/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    versioning-strategy: "auto"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "security"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      typescript-types:
+        patterns:
+          - "@types/*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      testing:
+        patterns:
+          - "jest*"
+          - "@jest/*"
+          - "ts-jest"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+      supabase:
+        patterns:
+          - "@supabase/*"
+        update-types:
+          - "minor"
+          - "patch"
+      security-critical:
+        patterns:
+          - "jsonwebtoken"
+          - "bcrypt"
+          - "crypto-js"
+        update-types:
+          - "patch"
+    ignore:
+      - dependency-name: "typescript"
+        versions: ["6.x"]
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 10
+
+  # Frontend dependencies configuration
+  - package-ecosystem: "npm"
+    directory: "/src/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    versioning-strategy: "auto"
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "security"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+        update-types:
+          - "minor"
+          - "patch"
+      testing:
+        patterns:
+          - "vitest*"
+          - "cypress*"
+          - "@testing-library/*"
+        update-types:
+          - "minor"
+          - "patch"
+      ui:
+        patterns:
+          - "tailwindcss*"
+          - "@shadcn/*"
+        update-types:
+          - "minor"
+          - "patch"
+      security-critical:
+        patterns:
+          - "auth*"
+          - "crypto*"
+        update-types:
+          - "patch"
+    ignore:
+      - dependency-name: "typescript"
+        versions: ["6.x"]
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 10
+
+  # GitHub Actions dependencies configuration
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "ci"
+      - "security"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+    groups:
+      actions:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
