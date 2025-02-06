@@ -1,0 +1,60 @@
+# Prometheus Recording Rules v2.x
+# Defines recording rules for metric aggregation and derived metrics for the HotGigs platform
+
+groups:
+  # API SLO metrics
+  - name: api_slos
+    rules:
+      - record: job:http_requests_total:rate5m
+        expr: sum(rate(http_requests_total{job="hotgigs"}[5m])) by (code)
+        labels:
+          service: hotgigs-api
+      
+      - record: job:http_request_duration_seconds:p95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="hotgigs"}[5m])) by (le))
+        labels:
+          service: hotgigs-api
+
+  # Database performance metrics
+  - name: database_metrics
+    rules:
+      - record: job:pg_connections:utilization
+        expr: sum(pg_stat_activity_count{job="hotgigs-db"}) / sum(pg_settings_max_connections{job="hotgigs-db"})
+        labels:
+          service: hotgigs-db
+      
+      - record: job:pg_query_duration:p95
+        expr: histogram_quantile(0.95, sum(rate(pg_query_duration_seconds_bucket{job="hotgigs-db"}[5m])) by (le))
+        labels:
+          service: hotgigs-db
+
+  # Edge function performance metrics
+  - name: edge_functions
+    rules:
+      - record: job:edge_function_executions:error_rate
+        expr: sum(rate(edge_function_executions_total{job="hotgigs-edge",status="error"}[5m])) / sum(rate(edge_function_executions_total{job="hotgigs-edge"}[5m]))
+        labels:
+          service: hotgigs-edge
+      
+      - record: job:edge_function_duration:p95
+        expr: histogram_quantile(0.95, sum(rate(edge_function_duration_seconds_bucket{job="hotgigs-edge"}[5m])) by (le))
+        labels:
+          service: hotgigs-edge
+
+  # Business KPI metrics
+  - name: business_metrics
+    rules:
+      - record: job:jobs_created:rate1h
+        expr: rate(jobs_created_total{job="hotgigs"}[1h])
+        labels:
+          service: hotgigs
+
+      - record: job:interviews_scheduled:rate1h
+        expr: rate(interviews_scheduled_total{job="hotgigs"}[1h])
+        labels:
+          service: hotgigs
+
+      - record: job:candidate_matches:success_rate1h
+        expr: sum(rate(candidate_matches_total{job="hotgigs",status="success"}[1h])) / sum(rate(candidate_matches_total{job="hotgigs"}[1h]))
+        labels:
+          service: hotgigs
