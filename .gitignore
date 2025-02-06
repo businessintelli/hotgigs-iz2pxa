@@ -1,0 +1,93 @@
+**/node_modules/
+**/.pnp
+**/.pnp.js
+**/package-lock.json
+**/yarn.lock
+
+# Build and Compilation
+**/dist/
+**/build/
+**/.edge-functions/
+**/*.js
+**/*.js.map
+**/*.d.ts
+
+# Testing and Coverage
+**/coverage/
+**/.nyc_output/
+**/cypress/videos/
+**/cypress/screenshots/
+**/test-results/
+
+# Environment and Security
+**/.env
+**/.env.*
+**/*.local
+**/supabase/.env
+**/*.key
+**/*.pem
+
+# IDE and Editor
+**/.vscode/*
+!**/.vscode/extensions.json
+**/.idea/
+**/*.suo
+**/*.ntvs*
+
+# Logs and Debugging
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/debug.log
+**/logs/
+
+# System and OS
+**/.DS_Store
+**/Thumbs.db
+**/*.swp
+**/*~
+
+# Project-specific build artifacts
+**/.next/
+**/.nuxt/
+**/.cache/
+**/.output/
+
+# TypeScript incremental compilation
+**/*.tsbuildinfo
+
+# Temporary files
+**/tmp/
+**/temp/
+
+# Local development overrides
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# Database backups
+**/*.dump
+**/*.sql
+**/*.sqlite
+
+# Supabase specific
+**/.branches/
+**/.temp/
+**/supabase/.temp/
+**/supabase/config.toml
+
+# Edge Functions artifacts
+**/.functions/
+**/.vercel/
+**/netlify/functions/
+
+# Test snapshots
+**/__snapshots__/
+**/*.snap
+
+# Misc
+**/.history/
+**/.git/
+**/.svn/
+**/.hg/
