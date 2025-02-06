@@ -1,0 +1,38 @@
+# Version: 1.0
+# Last Updated: 2024
+
+User-agent: *
+
+# Allow public job and company listings
+Allow: /jobs/public
+Allow: /jobs/public/*
+Allow: /companies/public
+Allow: /companies/public/*
+
+# Protect sensitive application paths
+Disallow: /api/
+Disallow: /auth/
+Disallow: /candidates/
+Disallow: /interviews/
+Disallow: /pipeline/
+Disallow: /analytics/
+Disallow: /hotlists/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /jobs/private/
+Disallow: /jobs/draft/
+Disallow: /companies/private/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /reports/
+Disallow: /search/
+Disallow: /notifications/
+Disallow: /messages/
+Disallow: /billing/
+Disallow: /integrations/
+
+# Rate limiting for crawlers
+Crawl-delay: 1
+
+# XML Sitemap reference
+Sitemap: https://hotgigs.com/sitemap.xml
