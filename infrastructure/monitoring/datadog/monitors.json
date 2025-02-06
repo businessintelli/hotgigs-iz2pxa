@@ -1,0 +1,162 @@
+{
+  "api_monitors": [
+    {
+      "name": "API Response Time",
+      "type": "metric alert",
+      "query": "avg:http.request.duration{service:hotgigs-api} by {endpoint}.rollup(sum, 60) > 2",
+      "message": "API response time exceeding 2 seconds SLA threshold. Impact: User Experience. Action: Check API logs and scaling.",
+      "thresholds": {
+        "critical": 2.0,
+        "warning": 1.5,
+        "recovery": 1.2
+      },
+      "notify": ["@pagerduty-hotgigs"],
+      "evaluation_delay": 60,
+      "include_tags": true,
+      "require_full_window": true,
+      "notify_audit": true,
+      "notify_no_data": true,
+      "no_data_timeframe": 10,
+      "renotify_interval": 30
+    },
+    {
+      "name": "API Error Rate",
+      "type": "metric alert",
+      "query": "sum:http.errors{service:hotgigs-api}.as_rate().rollup(sum, 300) > 10",
+      "message": "High error rate detected in API responses. Impact: Service Reliability. Action: Review error logs.",
+      "thresholds": {
+        "critical": 10,
+        "warning": 5,
+        "recovery": 3
+      },
+      "notify": ["@pagerduty-hotgigs"],
+      "evaluation_delay": 300,
+      "include_tags": true,
+      "require_full_window": true,
+      "notify_audit": true,
+      "notify_no_data": true,
+      "no_data_timeframe": 10,
+      "renotify_interval": 60
+    }
+  ],
+  "database_monitors": [
+    {
+      "name": "Database Connections",
+      "type": "metric alert",
+      "query": "avg:postgresql.connections{service:hotgigs-db}.rollup(max, 300) > 80",
+      "message": "High database connection count detected. Impact: Database Performance. Action: Check connection pooling.",
+      "thresholds": {
+        "critical": 80,
+        "warning": 60,
+        "recovery": 50
+      },
+      "notify": ["@pagerduty-hotgigs-db"],
+      "evaluation_delay": 300,
+      "include_tags": true,
+      "require_full_window": true,
+      "notify_audit": true,
+      "notify_no_data": true,
+      "no_data_timeframe": 10,
+      "renotify_interval": 60
+    },
+    {
+      "name": "Database Query Latency",
+      "type": "metric alert",
+      "query": "avg:postgresql.query_duration{service:hotgigs-db} by {query_type}.rollup(avg, 300) > 1",
+      "message": "Database query latency exceeding threshold. Impact: Application Performance. Action: Review slow queries.",
+      "thresholds": {
+        "critical": 1.0,
+        "warning": 0.5,
+        "recovery": 0.3
+      },
+      "notify": ["@pagerduty-hotgigs-db"],
+      "evaluation_delay": 300,
+      "include_tags": true,
+      "require_full_window": true,
+      "notify_audit": true,
+      "notify_no_data": true,
+      "no_data_timeframe": 10,
+      "renotify_interval": 60
+    }
+  ],
+  "edge_function_monitors": [
+    {
+      "name": "Edge Function Cold Starts",
+      "type": "metric alert",
+      "query": "sum:edge.function.cold_starts{service:hotgigs-edge}.as_rate() > 10",
+      "message": "High rate of cold starts detected. Impact: Response Time. Action: Review function scaling.",
+      "thresholds": {
+        "critical": 10,
+        "warning": 5,
+        "recovery": 3
+      },
+      "notify": ["@pagerduty-hotgigs-edge"],
+      "evaluation_delay": 60,
+      "include_tags": true,
+      "require_full_window": false,
+      "notify_audit": true,
+      "notify_no_data": true,
+      "no_data_timeframe": 5,
+      "renotify_interval": 30
+    },
+    {
+      "name": "Edge Function Execution Time",
+      "type": "metric alert",
+      "query": "avg:edge.function.duration{service:hotgigs-edge} by {function_name}.rollup(avg, 60) > 1",
+      "message": "Edge function execution time exceeding threshold. Impact: User Experience. Action: Optimize function code.",
+      "thresholds": {
+        "critical": 1.0,
+        "warning": 0.5,
+        "recovery": 0.3
+      },
+      "notify": ["@pagerduty-hotgigs-edge"],
+      "evaluation_delay": 60,
+      "include_tags": true,
+      "require_full_window": false,
+      "notify_audit": true,
+      "notify_no_data": true,
+      "no_data_timeframe": 5,
+      "renotify_interval": 30
+    }
+  ],
+  "security_monitors": [
+    {
+      "name": "Authentication Anomalies",
+      "type": "metric alert",
+      "query": "anomalies(sum:auth.failures{service:hotgigs-api}.as_rate(), 'basic', 2, direction='above', interval=60, alert_window='last_15m', count_default_zero='true')",
+      "message": "Anomalous authentication failure pattern detected. Impact: Security. Action: Review security logs.",
+      "thresholds": {
+        "critical": 2,
+        "warning": 1,
+        "recovery": 0
+      },
+      "notify": ["@pagerduty-hotgigs-security"],
+      "evaluation_delay": 900,
+      "include_tags": true,
+      "require_full_window": true,
+      "notify_audit": true,
+      "notify_no_data": true,
+      "no_data_timeframe": 30,
+      "renotify_interval": 60
+    },
+    {
+      "name": "Suspicious API Patterns",
+      "type": "metric alert",
+      "query": "anomalies(sum:api.suspicious_requests{service:hotgigs-api}.as_rate(), 'agile', 3, direction='above', interval=300, alert_window='last_30m', count_default_zero='true')",
+      "message": "Suspicious API request patterns detected. Impact: Security. Action: Review WAF logs and consider IP blocking.",
+      "thresholds": {
+        "critical": 3,
+        "warning": 2,
+        "recovery": 1
+      },
+      "notify": ["@pagerduty-hotgigs-security"],
+      "evaluation_delay": 1800,
+      "include_tags": true,
+      "require_full_window": true,
+      "notify_audit": true,
+      "notify_no_data": true,
+      "no_data_timeframe": 30,
+      "renotify_interval": 120
+    }
+  ]
+}
