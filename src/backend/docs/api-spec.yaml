@@ -1,0 +1,329 @@
+openapi: 3.0.3
+info:
+  title: HotGigs API
+  version: v1
+  description: |
+    Enterprise-grade API for the HotGigs recruitment platform. Provides endpoints for job management,
+    candidate processing, interview scheduling, and analytics with comprehensive security controls.
+  contact:
+    name: HotGigs Support
+    email: support@hotgigs.com
+  license:
+    name: Proprietary
+    
+servers:
+  - url: https://api.hotgigs.com/api/v1
+    description: Production environment
+  - url: https://staging-api.hotgigs.com/api/v1
+    description: Staging environment
+  - url: http://localhost:3000/api/v1
+    description: Development environment
+
+security:
+  - bearerAuth: []
+  - apiKeyAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication token with RS256 signing
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional API key for service-to-service communication
+
+  schemas:
+    UUID:
+      type: string
+      format: uuid
+      
+    Timestamp:
+      type: string
+      format: date-time
+
+    UserRole:
+      type: string
+      enum:
+        - ADMIN
+        - RECRUITER
+        - HIRING_MANAGER
+        - CANDIDATE
+        - GUEST
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - VALIDATION_ERROR
+            - NOT_FOUND
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - INTERNAL_ERROR
+            - CONFLICT
+            - BAD_REQUEST
+            - SERVICE_UNAVAILABLE
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+
+    UserProfile:
+      type: object
+      properties:
+        avatar_url:
+          type: string
+          format: uri
+        phone:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        location:
+          type: string
+        timezone:
+          type: string
+        linkedin_url:
+          type: string
+          format: uri
+        certifications:
+          type: array
+          items:
+            type: string
+        languages:
+          type: array
+          items:
+            type: string
+        preferences:
+          type: object
+          additionalProperties: true
+        notification_settings:
+          type: object
+          additionalProperties:
+            type: boolean
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - full_name
+        - role
+        - profile
+        - email_verified
+        - created_at
+        - updated_at
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        profile:
+          $ref: '#/components/schemas/UserProfile'
+        email_verified:
+          type: boolean
+        last_login:
+          $ref: '#/components/schemas/Timestamp'
+        failed_login_attempts:
+          type: integer
+          minimum: 0
+        account_locked:
+          type: boolean
+        allowed_ip_addresses:
+          type: array
+          items:
+            type: string
+        security_questions:
+          type: array
+          items:
+            type: string
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user and get tokens
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                device_id:
+                  type: string
+                remember_me:
+                  type: boolean
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  expires_in:
+                    type: integer
+                  token_type:
+                    type: string
+                    enum: [bearer]
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /jobs:
+    get:
+      tags:
+        - Jobs
+      summary: List all jobs with filtering and pagination
+      operationId: listJobs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [DRAFT, PUBLISHED, CLOSED]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Job'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+                  total_pages:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  components:
+    parameters:
+      PageParam:
+        name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      LimitParam:
+        name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+
+    responses:
+      UnauthorizedError:
+        description: Authentication failed
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      
+      ForbiddenError:
+        description: Permission denied
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      
+      TooManyRequests:
+        description: Rate limit exceeded
+        headers:
+          X-RateLimit-Limit:
+            schema:
+              type: integer
+          X-RateLimit-Remaining:
+            schema:
+              type: integer
+          X-RateLimit-Reset:
+            schema:
+              type: integer
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization endpoints
+  - name: Jobs
+    description: Job posting and management endpoints
+  - name: Candidates
+    description: Candidate profile and application endpoints
+  - name: Interviews
+    description: Interview scheduling and feedback endpoints
+  - name: Analytics
+    description: Reporting and analytics endpoints
