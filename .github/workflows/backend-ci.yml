@@ -1,0 +1,185 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/backend/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'src/backend/**'
+
+env:
+  NODE_VERSION: '18.x'
+  NODE_ENV: 'test'
+  COVERAGE_THRESHOLD: '85'
+  CI: 'true'
+  FORCE_COLOR: 'true'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'src/backend/package-lock.json'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules/.cache
+          key: ${{ runner.os }}-node-${{ hashFiles('src/backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            ${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: src/backend
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run TypeScript compilation
+        working-directory: src/backend
+        run: |
+          npm run typecheck
+          npm run build
+
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        with:
+          path: src/backend/dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'src/backend/package-lock.json'
+
+      - name: Restore build artifacts
+        uses: actions/cache@v3
+        with:
+          path: src/backend/dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+      - name: Install dependencies
+        working-directory: src/backend
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run tests with coverage
+        working-directory: src/backend
+        run: npm run test:coverage
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ./coverage/junit
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-reports
+          path: src/backend/coverage
+          retention-days: 14
+
+      - name: Check coverage thresholds
+        working-directory: src/backend
+        run: |
+          COVERAGE=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')
+          if (( $(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
+            echo "Coverage $COVERAGE% is below threshold of $COVERAGE_THRESHOLD%"
+            exit 1
+          fi
+
+  lint:
+    name: Lint
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'src/backend/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: src/backend
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run ESLint
+        working-directory: src/backend
+        run: npm run lint
+
+      - name: Check formatting
+        working-directory: src/backend
+        run: npm run format -- --check
+
+      - name: Upload lint results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-results
+          path: src/backend/lint-results.json
+          retention-days: 7
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        working-directory: src/backend
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run npm audit
+        working-directory: src/backend
+        run: npm audit --production --audit-level=high
+
+      - name: Upload security results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-results
+          path: src/backend/security-results.json
+          retention-days: 30
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
