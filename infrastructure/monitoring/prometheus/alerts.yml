@@ -1,0 +1,122 @@
+# Prometheus Alerts Configuration v2.x
+# Defines alerting rules for the HotGigs platform monitoring system
+
+# Recording rules for metric aggregation
+groups:
+- name: hotgigs_metrics
+  rules:
+  # API performance metrics
+  - record: job:http_request_duration_seconds:p95
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="hotgigs"}[5m])) by (le))
+
+  # Database connection metrics  
+  - record: job:pg_connections:utilization
+    expr: sum(pg_stat_activity_count) / pg_settings_max_connections
+
+  # Database query performance
+  - record: job:pg_query_duration:p95
+    expr: histogram_quantile(0.95, sum(rate(pg_query_duration_seconds_bucket[5m])) by (le))
+
+  # Edge function metrics
+  - record: job:edge_function_executions:error_rate
+    expr: sum(rate(edge_function_executions_total{status="error"}[5m])) / sum(rate(edge_function_executions_total[5m]))
+  
+  - record: job:edge_function_duration:p95
+    expr: histogram_quantile(0.95, sum(rate(edge_function_duration_seconds_bucket[5m])) by (le))
+
+  # Business metrics
+  - record: job:jobs_created:rate1h
+    expr: sum(rate(jobs_created_total[1h]))
+
+  - record: job:interviews_scheduled:rate1h
+    expr: sum(rate(interviews_scheduled_total[1h]))
+
+# Alert rules grouped by service/component
+groups:
+- name: api_availability
+  rules:
+  - alert: APIHighLatency
+    expr: job:http_request_duration_seconds:p95 > 2
+    for: 5m
+    labels:
+      severity: critical
+      service: hotgigs-api
+    annotations:
+      summary: API response time exceeding SLA
+      description: 95th percentile of API response time is above 2 seconds
+
+  - alert: APIHighErrorRate
+    expr: sum(rate(http_requests_total{job="hotgigs",code=~"5.."}[5m])) / sum(rate(http_requests_total{job="hotgigs"}[5m])) > 0.05
+    for: 5m
+    labels:
+      severity: critical
+      service: hotgigs-api
+    annotations:
+      summary: High API error rate detected
+      description: Error rate is above 5% over 5 minutes
+
+- name: database_health
+  rules:
+  - alert: DatabaseConnectionsSaturated
+    expr: job:pg_connections:utilization > 0.8
+    for: 5m
+    labels:
+      severity: warning
+      service: hotgigs-db
+    annotations:
+      summary: Database connections near capacity
+      description: Connection pool utilization above 80%
+
+  - alert: DatabaseHighLatency
+    expr: job:pg_query_duration:p95 > 1
+    for: 5m
+    labels:
+      severity: warning
+      service: hotgigs-db
+    annotations:
+      summary: Database query latency high
+      description: 95th percentile of query duration above 1 second
+
+- name: edge_functions
+  rules:
+  - alert: EdgeFunctionHighErrorRate
+    expr: job:edge_function_executions:error_rate > 0.05
+    for: 5m
+    labels:
+      severity: critical
+      service: hotgigs-edge
+    annotations:
+      summary: Edge function high error rate
+      description: Error rate above 5% over 5 minutes
+
+  - alert: EdgeFunctionHighLatency
+    expr: job:edge_function_duration:p95 > 1
+    for: 5m
+    labels:
+      severity: warning
+      service: hotgigs-edge
+    annotations:
+      summary: Edge function execution time high
+      description: 95th percentile of execution time above 1 second
+
+- name: business_metrics
+  rules:
+  - alert: LowJobCreationRate
+    expr: job:jobs_created:rate1h < 1
+    for: 1h
+    labels:
+      severity: warning
+      service: hotgigs
+    annotations:
+      summary: Low job creation rate
+      description: Job creation rate below 1 per hour
+
+  - alert: LowInterviewSchedulingRate
+    expr: job:interviews_scheduled:rate1h < 0.5
+    for: 1h
+    labels:
+      severity: warning
+      service: hotgigs
+    annotations:
+      summary: Low interview scheduling rate
+      description: Interview scheduling rate below 0.5 per hour
