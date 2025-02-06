@@ -1,0 +1,193 @@
+/* components.css - HotGigs Component Styles
+ * Version: 1.0.0
+ * Dependencies:
+ * - @shadcn/ui@1.0.0
+ * - tailwindcss@3.0+
+ */
+
+@import './globals.css';
+@import './tailwind.css';
+
+/* Component Variables */
+:root {
+  /* Base Component Dimensions */
+  --card-padding: var(--space-6);
+  --input-height: 2.5rem;
+  --button-height: 2.5rem;
+  --dialog-width: 28rem;
+  --tooltip-max-width: 20rem;
+
+  /* Avatar Sizes */
+  --avatar-size-xs: 1.5rem;
+  --avatar-size-sm: 2rem;
+  --avatar-size-md: 2.5rem;
+  --avatar-size-lg: 3rem;
+  --avatar-size-xl: 4rem;
+
+  /* Focus States */
+  --focus-ring: 0 0 0 2px var(--ring);
+
+  /* Transitions */
+  --transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* Button Component */
+.button {
+  @apply inline-flex items-center justify-center rounded-md font-medium transition-colors 
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
+         disabled:pointer-events-none disabled:opacity-50;
+  height: var(--button-height);
+}
+
+.button--primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/95;
+}
+
+.button--secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/85;
+}
+
+.button--destructive {
+  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/95;
+}
+
+.button--outline {
+  @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent/90;
+}
+
+.button--ghost {
+  @apply hover:bg-accent hover:text-accent-foreground active:bg-accent/90;
+}
+
+.button--link {
+  @apply text-primary underline-offset-4 hover:underline;
+}
+
+/* Button Sizes */
+.button--xs {
+  @apply h-8 px-2 text-xs;
+}
+
+.button--sm {
+  @apply h-9 px-3 text-sm;
+}
+
+.button--md {
+  @apply h-10 px-4 text-base;
+}
+
+.button--lg {
+  @apply h-11 px-8 text-lg;
+}
+
+/* Input Component */
+.input {
+  @apply flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm
+         ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium
+         placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2
+         focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed
+         disabled:opacity-50;
+  height: var(--input-height);
+}
+
+.input--error {
+  @apply border-destructive focus-visible:ring-destructive;
+}
+
+/* Dialog Component */
+.dialog {
+  @apply fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in
+         data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0;
+  max-width: var(--dialog-width);
+}
+
+.dialog__content {
+  @apply bg-background p-6 shadow-lg;
+}
+
+/* Card Component */
+.card {
+  @apply rounded-lg border border-border bg-card text-card-foreground shadow-sm;
+  padding: var(--card-padding);
+}
+
+.card--interactive {
+  @apply hover:border-primary/50 hover:shadow-md transition-all;
+}
+
+/* Avatar Component */
+.avatar {
+  @apply relative flex shrink-0 overflow-hidden rounded-full;
+}
+
+.avatar--xs {
+  width: var(--avatar-size-xs);
+  height: var(--avatar-size-xs);
+}
+
+.avatar--sm {
+  width: var(--avatar-size-sm);
+  height: var(--avatar-size-sm);
+}
+
+.avatar--md {
+  width: var(--avatar-size-md);
+  height: var(--avatar-size-md);
+}
+
+.avatar--lg {
+  width: var(--avatar-size-lg);
+  height: var(--avatar-size-lg);
+}
+
+.avatar--xl {
+  width: var(--avatar-size-xl);
+  height: var(--avatar-size-xl);
+}
+
+/* Hover Media Query */
+@media (hover: hover) {
+  .button {
+    @apply transition-colors duration-200;
+  }
+
+  .card--interactive {
+    @apply hover:border-primary/50;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .dialog {
+    @apply bg-background/90;
+  }
+
+  .card {
+    @apply border-muted;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (forced-colors: active) {
+  .button {
+    border: 2px solid currentColor;
+  }
+
+  .input {
+    border: 2px solid currentColor;
+  }
+}
