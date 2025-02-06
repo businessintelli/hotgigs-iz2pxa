@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <!-- Character encoding and viewport configuration -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <!-- Primary meta tags -->
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="HotGigs - AI-powered recruitment platform revolutionizing hiring through intelligent matching and workflow automation">
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="HotGigs - AI-Powered Recruitment Platform">
+    <meta property="og:description" content="Transform your hiring process with AI-powered candidate matching and comprehensive workflow automation">
+    
+    <!-- iOS specific meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Security headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://api.hotgigs.com; frame-ancestors 'none'; form-action 'self'">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="camera=self microphone=self notifications=self">
+    
+    <!-- Resource hints for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    
+    <!-- PWA assets -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/logo192.png">
+    
+    <!-- Application title -->
+    <title>HotGigs - AI-Powered Recruitment Platform</title>
+</head>
+<body>
+    <!-- React application mount point with ARIA landmark -->
+    <main id="root" aria-label="HotGigs Application"></main>
+    
+    <!-- Fallback for JavaScript disabled environments -->
+    <noscript>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;text-align:center;padding:20px;">
+            <h1 style="font-size:24px;margin-bottom:16px;">JavaScript Required</h1>
+            <p>JavaScript is required to run this application. Please enable JavaScript to continue.</p>
+        </div>
+    </noscript>
+    
+    <!-- Application entry point with module type for optimized loading -->
+    <script type="module" src="/src/main.tsx" defer></script>
+</body>
+</html>
