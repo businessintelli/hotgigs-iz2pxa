@@ -1,0 +1,178 @@
+# DataDog Agent Configuration v7.x
+# HotGigs Platform Monitoring Configuration
+
+# API Configuration
+api:
+  key: ${DD_API_KEY}
+  site: datadoghq.com
+  hostname: hotgigs-${env}-${region}
+
+# General Settings
+use_dogstatsd: true
+dogstatsd_port: 8125
+logs_enabled: true
+process_config:
+  enabled: true
+  intervals:
+    container: 10
+    process: 30
+
+# APM Configuration
+apm_config:
+  enabled: true
+  env: ${env}
+  analyzed_spans:
+    hotgigs|http.request: 1.0
+    hotgigs|db.query: 0.5
+    hotgigs|edge.function: 0.75
+    hotgigs|auth.request: 1.0
+  trace_sampling_rules:
+    - service: hotgigs-api
+      name: http.request
+      sample_rate: 1.0
+    - service: hotgigs-db
+      name: db.query
+      sample_rate: 0.5
+
+# Logs Configuration
+logs_config:
+  container_collect_all: true
+  processing_rules:
+    - type: mask_sequences
+      name: mask_credentials
+      pattern: (password=|token=|key=|secret=)\w+
+    - type: mask_sequences
+      name: mask_pii
+      pattern: (email=|phone=|ssn=)\w+
+  retention_days: 30
+  compression_level: high
+
+# Metrics Configuration
+metrics_config:
+  collection_interval: 15
+  aggregator_interval: 30
+  service: hotgigs
+  tags:
+    - env:${env}
+    - region:${region}
+    - service:hotgigs
+    - version:${app_version}
+  custom_metrics:
+    - name: hotgigs.job.postings
+      type: gauge
+    - name: hotgigs.active.users
+      type: gauge
+    - name: hotgigs.matching.score
+      type: histogram
+
+# Security Configuration
+security_config:
+  runtime_security_config:
+    enabled: true
+    policies:
+      activity_monitoring: true
+      file_integrity_monitoring: true
+      network_monitoring: true
+      process_monitoring: true
+    custom_rules:
+      - name: sensitive_file_access
+        conditions: "file.path == '/etc/secrets'"
+      - name: unauthorized_process
+        conditions: "process.name == 'ssh' && user.name != 'authorized_user'"
+  compliance_config:
+    enabled: true
+    frameworks:
+      - pci
+      - soc2
+      - gdpr
+      - ccpa
+    scan_interval: 3600
+    report_retention: 90
+
+# Monitors Configuration
+monitors_config:
+  api_monitors:
+    - name: API Response Time
+      type: metric alert
+      query: avg:http.request.duration{service:hotgigs-api} > 2
+      message: API response time exceeding 2 seconds
+      thresholds:
+        critical: 2
+        warning: 1.5
+      notify:
+        - "@pagerduty-hotgigs"
+  
+  database_monitors:
+    - name: Database Connections
+      type: metric alert
+      query: avg:postgresql.connections{service:hotgigs-db} > 80
+      message: High database connection count
+      thresholds:
+        critical: 80
+        warning: 60
+      notify:
+        - "@pagerduty-hotgigs-db"
+  
+  edge_monitors:
+    - name: Edge Function Errors
+      type: metric alert
+      query: sum:edge.function.errors{service:hotgigs-edge}.as_rate() > 5
+      message: High edge function error rate
+      thresholds:
+        critical: 5
+        warning: 2
+      notify:
+        - "@pagerduty-hotgigs-edge"
+
+# Integration Configurations
+integrations:
+  postgresql:
+    enabled: true
+    instances:
+      - host: hotgigs-db
+        port: 5432
+        username: datadog
+        password: ${DD_PG_PASS}
+  
+  supabase:
+    enabled: true
+    instances:
+      - project_id: ${SUPABASE_PROJECT_ID}
+        api_key: ${SUPABASE_API_KEY}
+
+  openai:
+    enabled: true
+    instances:
+      - api_key: ${OPENAI_API_KEY}
+        environment: ${env}
+
+# Health Check Configuration
+health_check:
+  enabled: true
+  timeout: 5
+  interval: 30
+  grace: 3
+
+# Network Configuration
+network_config:
+  enabled: true
+  collect_connection_state: true
+  collect_dns_stats: true
+  collect_latency_stats: true
+  excluded_interfaces:
+    - lo
+    - docker0
+
+# Resource Configuration
+resource_config:
+  enabled: true
+  collection:
+    cpu: true
+    memory: true
+    disk: true
+    network: true
+  intervals:
+    cpu: 15
+    memory: 15
+    disk: 60
+    network: 30
