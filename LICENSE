@@ -1,0 +1,86 @@
+MIT License with AI Provisions
+
+Copyright (c) 2024 HotGigs
+
+Permission is hereby granted, free of charge, to any person or entity obtaining a copy of this software and associated documentation files (the "Software"), including its artificial intelligence components ("AI Components"), to deal in the Software subject to the following terms and conditions:
+
+1. DEFINITIONS
+
+"Software" means the HotGigs recruitment management system, including all source code, documentation, AI models, APIs, and associated materials.
+"AI Components" means all artificial intelligence and machine learning models, algorithms, and training data included in the Software.
+"Services" means any cloud-based or hosted services provided as part of the Software.
+"User Data" means any data processed by the Software on behalf of users or organizations.
+
+2. GRANT OF LICENSE
+
+Subject to compliance with these terms, users may:
+- Use the Software for commercial and enterprise purposes
+- Modify the Software for internal use
+- Integrate the Software with existing systems
+- Deploy the Software in production environments
+
+The following restrictions apply:
+- Redistributions must retain this license and all copyright notices
+- Modified versions must be clearly marked as such
+- No use of HotGigs trademarks without written permission
+
+3. AI COMPONENTS
+
+The AI Components are licensed for:
+- Production use within the Software
+- Integration with enterprise systems
+- Processing of authorized data
+
+Restrictions on AI Components:
+- No reverse engineering of AI models
+- No unauthorized training data extraction
+- No separate commercialization of AI models
+
+4. DATA PRIVACY COMPLIANCE
+
+Users must comply with:
+- General Data Protection Regulation (GDPR)
+- California Consumer Privacy Act (CCPA)
+- SOC 2 requirements
+- HIPAA regulations where applicable
+
+Requirements include:
+- Implementing appropriate data protection measures
+- Honoring data subject rights
+- Maintaining required security controls
+- Reporting data breaches as required by law
+
+5. THIRD-PARTY SERVICES
+
+Integration with third-party services must:
+- Comply with service providers' terms
+- Maintain security of authentication credentials
+- Honor rate limiting and fair use policies
+- Preserve data privacy requirements
+
+6. WARRANTIES
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+7. LIABILITY
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+8. TERM AND TERMINATION
+
+This license is effective until terminated:
+- Automatic termination upon breach of terms
+- Termination requires cessation of Software use
+- Post-termination data handling must comply with privacy laws
+- Survival of privacy and confidentiality obligations
+
+9. GOVERNING LAW
+
+This license shall be governed by and construed in accordance with the laws of the jurisdiction in which any claim or dispute arises, without regard to conflicts of law principles.
+
+For questions regarding this license, contact:
+legal@hotgigs.com
+
+Version: 1.0.0
+Last Updated: 2024
+Review Frequency: Annual
