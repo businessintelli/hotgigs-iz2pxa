@@ -70,7 +70,7 @@
     "retry": "^0.13.1",
     "retry-axios": "^3.0.0",
     "sanitize-html": "^2.11.0",
-    "sharp": "^0.32.0",
+    "sharp": "^0.33.5",
     "socket.io-client": "^4.7.0",
     "textract": "^2.5.0",
     "uuid": "^9.0.0",
