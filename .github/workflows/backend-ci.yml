@@ -38,7 +38,7 @@ jobs:
           cache-dependency-path: 'src/backend/package-lock.json'
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.npm
@@ -59,7 +59,7 @@ jobs:
           npm run build
 
       - name: Cache build artifacts
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: src/backend/dist
           key: ${{ runner.os }}-build-${{ github.sha }}
@@ -82,7 +82,7 @@ jobs:
           cache-dependency-path: 'src/backend/package-lock.json'
 
       - name: Restore build artifacts
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: src/backend/dist
           key: ${{ runner.os }}-build-${{ github.sha }}
